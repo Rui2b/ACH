@@ -1,6 +1,6 @@
 # 🚀 ACH (AI Command Helper)
 
-Chinese Version --> [README](https://github.com/Rui2b/ACH/blob/main/README.md)
+Chinese Version --> [README](https://github.com/Rui2b/ACH/blob/main/zh_cn-README.md)
 
 **Make the command line speak "human language".**
 
