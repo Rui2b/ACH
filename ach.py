@@ -7,99 +7,87 @@ import getpass
 import re
 
 def get_sys_info():
-    """环境自动侦测"""
     os_type = platform.system()
     os_ver = platform.release()
-    # 强制获取控制台编码，防止中文环境下执行命令乱码
-    system_encoding = locale.getpreferredencoding()
-    shell = os.environ.get('SHELL', 'cmd' if os_type == "Windows" else "bash")
-    return os_type, os_ver, system_encoding, shell
-
-def clean_ai_command(raw_text, current_user):
-    """防呆过滤：剔除所有可能导致执行失败的杂质"""
-    # 1. 移除 Markdown 代码块标记、反引号和转义符
-    clean = re.sub(r'```[a-zA-Z]*', '', raw_text)
-    clean = clean.replace('`', '').replace('\\', '/') if platform.system() != "Windows" else clean.replace('`', '')
-    
-    # 2. 只取有效的第一行（防止 AI 后面写一堆解释）
-    lines = [l.strip() for l in clean.split('\n') if l.strip()]
-    if not lines: return ""
-    command = lines[0]
-
-    # 3. 关键修复：自动纠正用户名占位符 (防止 AI 乱写 YourUsername)
-    command = command.replace('YourUsername', current_user).replace('<YourUsername>', current_user)
-    
-    return command
-
-def check_ollama():
-    """预防性检查：确保 Ollama 在后台运行"""
     try:
-        # 尝试静默运行命令，检查返回码
-        subprocess.run(['ollama', '--version'], capture_output=True, check=True)
-        return True
+        # 自动识别系统区域设置，防止中文系统报错
+        lang = locale.getdefaultlocale()[0] or "en_US"
     except:
-        return False
+        lang = "en_US"
+    shell = os.environ.get('SHELL', 'cmd' if os_type == "Windows" else "bash")
+    return os_type, os_ver, lang, shell
+
+def clean_command(raw_text, current_user):
+    """【核心预防】彻底清理 AI 输出的干扰项"""
+    # 1. 移除 Markdown 代码块标记（```cmd 等）
+    text = re.sub(r'```[a-zA-Z]*', '', raw_text)
+    # 2. 移除反引号
+    text = text.replace('`', '').strip()
+    
+    # 3. 只取第一行有效内容（防止 AI 在后面写解释说明）
+    lines = [line.strip() for line in text.split('\n') if line.strip()]
+    if not lines: return ""
+    
+    cmd = lines[0]
+    # 4. 【关键修复】自动将 AI 瞎编的用户名占位符替换为你的真实用户名 (例如 fang)
+    cmd = cmd.replace('YourUsername', current_user).replace('<YourUsername>', current_user)
+    return cmd
 
 def run_ach():
-    os_type, os_ver, encoding, shell = get_sys_info()
+    os_type, os_ver, lang, shell = get_sys_info()
     current_user = getpass.getuser()
 
-    # 1. 无参数运行提示 (增加 input 防止闪退)
+    # 无参数运行保护：显示信息并防止双击直接关窗
     if len(sys.argv) < 2:
-        print(f"--- ACH AI 助手 (v1.3 铁甲版) ---")
-        print(f"环境: {os_type} | 用户: {current_user} | 编码: {encoding}")
+        print(f"--- ACH AI 助手 v1.2 (防御增强版) ---")
+        print(f"当前系统: {os_type} | 登录用户: {current_user}")
         print("\n用法举例: ach 帮我在桌面创建一个测试文件夹")
-        if os_type == "Windows":
+        if os_type == "Windows": 
             input("\n按回车退出...")
         return
 
-    # 2. Ollama 状态检查
-    if not check_ollama():
-        print("\n[!] 错误: 未检测到 AI 引擎 (Ollama)")
-        print("请确保 Ollama 已启动（右下角有小羊驼图标）。")
-        if os_type == "Windows":
-            input("按回车退出...")
+    # 检测 Ollama 引擎状态
+    try:
+        subprocess.run(['ollama', '--version'], capture_output=True, check=True)
+    except:
+        print("\n[!] 错误: 未检测到 Ollama 引擎。")
+        print("请确保已安装 Ollama 并且右下角托盘中有“小羊驼”图标运行。")
+        if os_type == "Windows": input("按回车退出...")
         sys.exit(1)
 
-    user_query = " ".join(sys.argv[1:])
+    query = " ".join(sys.argv[1:])
     
-    # 3. Prompt 深度优化：强制 AI 闭嘴只给命令，并明确用户路径
-    prompt = (f"Context: {os_type} {os_ver}, User {current_user}, Shell {shell}. "
-              f"Task: {user_query}. "
-              f"Instruction: Output ONLY the one-line raw command. "
-              f"No markdown, no quotes, no explanations.")
+    # 精简 Prompt 约束 AI，只输出命令
+    prompt = (f"System: {os_type}. User: {current_user}. Task: {query}. "
+              "Rule: Output ONLY the raw executable command string. No markdown, no explanation.")
 
     try:
-        print("AI 思考中...", end="\r")
-        # 增加 15 秒超时控制
-        result = subprocess.run(
+        print("AI 正在思考并生成命令...", end="\r")
+        # 调用本地 0.5b 模型
+        res = subprocess.run(
             ['ollama', 'run', 'qwen2.5-coder:0.5b', prompt],
-            capture_output=True, text=True, encoding='utf-8', timeout=15
+            capture_output=True, text=True, encoding='utf-8', timeout=20
         )
         
-        command = clean_ai_command(result.stdout, current_user)
+        final_cmd = clean_command(res.stdout, current_user)
 
-        if not command:
-            print("\n[!] AI 生成了空命令，请换个描述试试。")
+        if not final_cmd:
+            print("\n[!] AI 没能生成有效命令，请尝试描述得更具体。")
             return
 
-        print(f"\n[AI 建议]: {command}")
-        confirm = input("确认执行? (y/n): ").lower()
+        print(f"\n[AI 建议执行]: {final_cmd}")
+        confirm = input("是否执行? (y/n): ").lower()
         
         if confirm == 'y':
-            # 4. 最终执行：使用 shell=True 以确保能运行系统内置命令
-            process = subprocess.run(command, shell=True)
-            if process.returncode == 0:
-                print("\n[√] 执行成功")
-            else:
-                print(f"\n[!] 执行失败，错误代码: {process.returncode}")
+            # 【终极修复】使用 shell=True 确保命令直接在 Windows CMD 环境中生效
+            # 这能解决“只弹出 PowerShell 窗口却不执行具体动作”的问题
+            subprocess.run(final_cmd, shell=True)
+            print("\n[√] 命令执行请求已发送。")
         else:
-            print("已取消。")
+            print("已取消执行。")
             
-    except subprocess.TimeoutExpired:
-        print("\n[!] 错误: AI 响应超时，请检查 Ollama 状态。")
     except Exception as e:
-        print(f"\n[!] 发生未知错误: {e}")
+        print(f"\n[!] 运行时报错: {e}")
         if os_type == "Windows": input("按回车退出...")
 
 if __name__ == "__main__":
