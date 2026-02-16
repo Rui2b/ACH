@@ -1,0 +1,43 @@
+name: 多平台自动打包 (Windows/Linux/Mac)
+
+on:
+  push:
+    tags:
+      - 'v*' # 当你发布以 v 开头的标签（如 v1.0）时触发
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Python 环境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 安装打包工具
+        run: pip install pyinstaller
+
+      - name: 开始编译 (Windows)
+        if: matrix.os == 'windows-latest'
+        run: pyinstaller --onefile --name ach_windows ach.py
+
+      - name: 开始编译 (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: pyinstaller --onefile --name ach_linux ach.py
+
+      - name: 开始编译 (macOS)
+        if: matrix.os == 'macos-latest'
+        run: pyinstaller --onefile --name ach_macos ach.py
+
+      - name: 上传编译结果
+        uses: actions/upload-artifact@v4
+        with:
+          name: ach-${{ matrix.os }}
+          path: dist/ach*
