@@ -1,5 +1,7 @@
 # 🤖 ACH (AI Command Helper) - Make Your Terminal Understand Human Language
 
+Chinese Version ---> [README] (https://github.com/Rui2b/ACH/blob/main/readme/zh_cn-README.md)
+
 **ACH** is a native AI command-line tool designed for efficiency (and laziness). It encapsulates a **500 million-parameter AI brain** directly within the program.
 
 No Python environment installation required, no complex Ollama configuration needed, no internet connection required. With just a single binary file, you can command your Windows, Linux, or macOS to perform system tasks using "natural language."
@@ -56,3 +58,4 @@ Second Confirmation: AI is not omnipotent. Before pressing 'y' to execute, pleas
 
 
 Model limitations: The built-in 0.5B model excels at file handling, directory operations, and system status queries. However, it may struggle with complex Python scripts due to insufficient processing power.
+
