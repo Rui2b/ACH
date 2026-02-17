@@ -13,7 +13,8 @@ jobs:
     name: Build on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false # 核心修复：防止单个平台失败导致全线取消
+      # 【关键修复】防止一个平台崩溃导致全家被杀
+      fail-fast: false 
       matrix:
         include:
           - os: windows-latest
@@ -38,9 +39,9 @@ jobs:
       - name: Install Dependencies
         shell: bash
         run: |
-          # 核心修复：macOS 环境下禁用 Metal 硬件加速以确保编译成功
+          # 【关键修复】在 Actions 环境下禁用导致崩溃的编译选项
           if [ "${{ matrix.os }}" = "macos-latest" ]; then
-            export CMAKE_ARGS="-DLLAMA_METAL=OFF"
+            export CMAKE_ARGS="-DLLAMA_METAL=OFF -DLLAMA_ACCELERATE=OFF"
           fi
           pip install pyinstaller llama-cpp-python
 
