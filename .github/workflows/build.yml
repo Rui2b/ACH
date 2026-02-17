@@ -1,43 +1,51 @@
-name: 多平台自动打包 (Windows/Linux/Mac)
+name: Build All-in-One Standalone EXE
 
 on:
   push:
     tags:
-      - 'v*' # 当你发布以 v 开头的标签（如 v1.0）时触发
+      - 'v*'
 
 jobs:
   build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        # 同时构建三个平台的二进制文件
         os: [windows-latest, ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
 
     steps:
-      - name: 检出代码
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 设置 Python 环境
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.10'
 
-      - name: 安装打包工具
-        run: pip install pyinstaller
+      - name: Install Dependencies
+        run: |
+          pip install pyinstaller llama-cpp-python
 
-      - name: 开始编译 (Windows)
+      - name: Download Model (Qwen 0.5B GGUF)
+        shell: bash
+        run: |
+          # 统一使用 curl 下载，三平台通用
+          curl -L "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/main/qwen2.5-0.5b-instruct-q4_k_m.gguf" -o model.gguf
+
+      - name: Build Binary (Windows)
         if: matrix.os == 'windows-latest'
-        run: pyinstaller --onefile --name ach_windows ach.py
+        run: |
+          pyinstaller --onefile --add-data "model.gguf;." ach.py
 
-      - name: 开始编译 (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        run: pyinstaller --onefile --name ach_linux ach.py
+      - name: Build Binary (Unix - Linux/macOS)
+        if: matrix.os != 'windows-latest'
+        run: |
+          # 注意：Unix 系统下路径分隔符是冒号 :
+          pyinstaller --onefile --add-data "model.gguf:." ach.py
 
-      - name: 开始编译 (macOS)
-        if: matrix.os == 'macos-latest'
-        run: pyinstaller --onefile --name ach_macos ach.py
-
-      - name: 上传编译结果
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ach-${{ matrix.os }}
-          path: dist/ach*
+          path: dist/*
