@@ -1,6 +1,6 @@
 # 🚀 ACH (AI Command Helper)
 
-Chinese Version --> [README](https://github.com/Rui2b/ACH/blob/main/zh_cn-README.md)
+Chinese Version --> [README](https://github.com/Rui2b/ACH/blob/main/readme/zh_cn-README.md)
 
 **Make the command line speak "human language".**
 
@@ -95,5 +95,6 @@ If you want to compile it yourself, please ensure that Python 3.11+ is installed
 pip install pyinstaller
 
 # Compile a single file
+
 
 pyinstaller --onefile --name ach ach.py
