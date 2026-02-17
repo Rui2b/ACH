@@ -1,94 +1,83 @@
 import sys
 import os
 import platform
-import subprocess
-import locale
 import getpass
 import re
+import subprocess
+from llama_cpp import Llama  # 核心：直接在进程内运行 AI
 
-def get_sys_info():
-    os_type = platform.system()
-    os_ver = platform.release()
-    try:
-        # 自动识别系统区域设置，防止中文系统报错
-        lang = locale.getdefaultlocale()[0] or "en_US"
-    except:
-        lang = "en_US"
-    shell = os.environ.get('SHELL', 'cmd' if os_type == "Windows" else "bash")
-    return os_type, os_ver, lang, shell
+def get_model_path():
+    """获取模型路径，适配 PyInstaller 打包后的路径"""
+    if getattr(sys, 'frozen', False):
+        # 如果是打包后的 exe，模型在内部临时文件夹
+        base_path = sys._MEIPASS
+    else:
+        # 如果是直接运行脚本，模型在当前目录
+        base_path = os.path.dirname(__file__)
+    
+    return os.path.join(base_path, "model.gguf")
 
 def clean_command(raw_text, current_user):
-    """【核心预防】彻底清理 AI 输出的干扰项"""
-    # 1. 移除 Markdown 代码块标记（```cmd 等）
+    # 这里的过滤逻辑保持不变
     text = re.sub(r'```[a-zA-Z]*', '', raw_text)
-    # 2. 移除反引号
     text = text.replace('`', '').strip()
-    
-    # 3. 只取第一行有效内容（防止 AI 在后面写解释说明）
     lines = [line.strip() for line in text.split('\n') if line.strip()]
     if not lines: return ""
-    
     cmd = lines[0]
-    # 4. 【关键修复】自动将 AI 瞎编的用户名占位符替换为你的真实用户名 (例如 fang)
+    if "创建" in sys.argv[1:].__str__() and cmd.lower().startswith("cd "):
+        cmd = cmd.replace("cd ", "md ", 1)
     cmd = cmd.replace('YourUsername', current_user).replace('<YourUsername>', current_user)
     return cmd
 
 def run_ach():
-    os_type, os_ver, lang, shell = get_sys_info()
     current_user = getpass.getuser()
+    model_path = get_model_path()
 
-    # 无参数运行保护：显示信息并防止双击直接关窗
-    if len(sys.argv) < 2:
-        print(f"--- ACH AI 助手 v1.2 (防御增强版) ---")
-        print(f"当前系统: {os_type} | 登录用户: {current_user}")
-        print("\n用法举例: ach 帮我在桌面创建一个测试文件夹")
-        if os_type == "Windows": 
-            input("\n按回车退出...")
+    if not os.path.exists(model_path):
+        print(f"[!] 错误: 找不到模型文件 {model_path}")
+        if platform.system() == "Windows": input("按回车退出..."); 
         return
 
-    # 检测 Ollama 引擎状态
-    try:
-        subprocess.run(['ollama', '--version'], capture_output=True, check=True)
-    except:
-        print("\n[!] 错误: 未检测到 Ollama 引擎。")
-        print("请确保已安装 Ollama 并且右下角托盘中有“小羊驼”图标运行。")
-        if os_type == "Windows": input("按回车退出...")
-        sys.exit(1)
+    if len(sys.argv) < 2:
+        print(f"--- ACH AI 助手 (一体化离线版) ---")
+        print(f"用户: {current_user} | 模型: Qwen 0.5B 内置")
+        if platform.system() == "Windows": input("\n按回车退出...")
+        return
 
     query = " ".join(sys.argv[1:])
     
-    # 精简 Prompt 约束 AI，只输出命令
-    prompt = (f"System: {os_type}. User: {current_user}. Task: {query}. "
-              "Rule: Output ONLY the raw executable command string. No markdown, no explanation.")
+    prompt = (f"<|im_start|>system\nYou are a Windows CMD expert. User: {current_user}. "
+              "Output ONLY the one-line raw command. No markdown.<|im_end|>\n"
+              f"<|im_start|>user\nTask: {query}<|im_end|>\n"
+              "<|im_start|>assistant\n")
 
     try:
-        print("AI 正在思考并生成命令...", end="\r")
-        # 调用本地 0.5b 模型
-        res = subprocess.run(
-            ['ollama', 'run', 'qwen2.5-coder:0.5b', prompt],
-            capture_output=True, text=True, encoding='utf-8', timeout=20
-        )
+        # 初始化内置模型
+        print("AI 引擎启动中 (首次运行可能较慢)...", end="\r")
+        llm = Llama(model_path=model_path, n_ctx=512, verbose=False)
         
-        final_cmd = clean_command(res.stdout, current_user)
+        print("AI 正在思考命令...            ", end="\r")
+        output = llm(prompt, max_tokens=64, stop=["<|im_end|>"], echo=False)
+        raw_res = output['choices'][0]['text']
+        
+        final_cmd = clean_command(raw_res, current_user)
 
         if not final_cmd:
-            print("\n[!] AI 没能生成有效命令，请尝试描述得更具体。")
+            print("\n[!] AI 没能理解指令。")
             return
 
-        print(f"\n[AI 建议执行]: {final_cmd}")
-        confirm = input("是否执行? (y/n): ").lower()
+        print(f"\n[AI 建议]: {final_cmd}")
+        confirm = input("确认执行? (y/n): ").lower()
         
         if confirm == 'y':
-            # 【终极修复】使用 shell=True 确保命令直接在 Windows CMD 环境中生效
-            # 这能解决“只弹出 PowerShell 窗口却不执行具体动作”的问题
             subprocess.run(final_cmd, shell=True)
-            print("\n[√] 命令执行请求已发送。")
+            print("\n[√] 任务已处理。")
         else:
-            print("已取消执行。")
+            print("已取消。")
             
     except Exception as e:
-        print(f"\n[!] 运行时报错: {e}")
-        if os_type == "Windows": input("按回车退出...")
+        print(f"\n[!] 发生错误: {e}")
+        if platform.system() == "Windows": input("按回车退出...")
 
 if __name__ == "__main__":
     run_ach()
