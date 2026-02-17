@@ -1,4 +1,4 @@
-name: Build and Release Standalone ACH
+name: ACH (AI Command Helper)
 
 on:
   push:
@@ -13,8 +13,7 @@ jobs:
     name: Build on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
-      # 【关键修复】防止一个平台崩溃导致全家被杀
-      fail-fast: false 
+      fail-fast: false
       matrix:
         include:
           - os: windows-latest
@@ -23,9 +22,6 @@ jobs:
           - os: ubuntu-latest
             artifact_name: ach_linux
             out_name: ach-linux
-          - os: macos-latest
-            artifact_name: ach_macos
-            out_name: ach-macos
 
     steps:
       - name: Checkout code
@@ -37,12 +33,7 @@ jobs:
           python-version: '3.10'
 
       - name: Install Dependencies
-        shell: bash
         run: |
-          # 【关键修复】在 Actions 环境下禁用导致崩溃的编译选项
-          if [ "${{ matrix.os }}" = "macos-latest" ]; then
-            export CMAKE_ARGS="-DLLAMA_METAL=OFF -DLLAMA_ACCELERATE=OFF"
-          fi
           pip install pyinstaller llama-cpp-python
 
       - name: Download Model
@@ -54,7 +45,6 @@ jobs:
       - name: Build Binary
         shell: bash
         run: |
-          # 动态识别路径分隔符：Windows 用分号，Unix 用冒号
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
             pyinstaller --onefile --add-data "ACH/model.gguf;." --name ${{ matrix.artifact_name }} ACH/ach.py
           else
