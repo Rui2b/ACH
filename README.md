@@ -1,100 +1,58 @@
-# 🚀 ACH (AI Command Helper)
+# 🤖 ACH (AI Command Helper) - Make Your Terminal Understand Human Language
 
-Chinese Version --> [README](https://github.com/Rui2b/ACH/blob/main/readme/zh_cn-README.md)
+**ACH** is a native AI command-line tool designed for efficiency (and laziness). It encapsulates a **500 million-parameter AI brain** directly within the program.
 
-**Make the command line speak "human language".**
-
-ACH is an ultra-lightweight command-line tool designed for beginners. Simply describe what you want to do in natural language, and ACH will automatically generate and run the corresponding system commands for you.
+No Python environment installation required, no complex Ollama configuration needed, no internet connection required. With just a single binary file, you can command your Windows, Linux, or macOS to perform system tasks using "natural language."
 
 ---
 
-## ✨ Core Features
+## 🌟 Key Highlights: Why Choose ACH?
 
-* 🆓 **Completely Free**: It doesn't call any paid APIs, runs locally on Ollama, and costs absolutely nothing.
+* **📦 Zero Dependencies, Double-Click to Use**: No runtime libraries or environments need to be installed; truly "unzip and use."
 
-* 🔒 **Privacy and Security**: All commands are processed on your local computer and are not uploaded to any server.
+* **🔒 Privacy First**: 100% local inference. Your commands, paths, and private filenames never leave your computer.
 
-* 🌍 **Intelligent Recognition**:
+* **🧠 Built-in Brain**: Integrates the lightweight `Qwen2.5-0.5B` model, specifically tuned for system commands.
 
-* Automatically recognizes the operating system (Windows, Linux, macOS, FreeBSD, ChromeOS).
+* **⚡ Extremely Lightweight**: Requires only about 500MB of memory to run smoothly, even on older computers.
 
-* Automatically recognizes the system language (Chinese, English, etc.).
-
-* Automatically matches the terminal type (CMD, PowerShell, Bash, Zsh).
-
-* **Extremely Lightweight:** Utilizing a 0.5b level AI model, it runs smoothly with only approximately 300MB of memory.
+* **🌍 Cross-Platform Support**: One codebase works on three platforms.
 
 ---
 
-## 🛠️ Quick Installation
+## 🛠️ Installation and Usage Guide
 
-### Step 1: Install the AI ​​Engine (Ollama)
+### 1. Download the Program
+Go to the [Releases](https://github.com/Rui2b/ACH/releases) page to download the latest compressed package suitable for your system:
 
-ACH requires the Ollama engine to drive the local AI.
+* **Windows**: `ach-windows.zip`
 
-* **Windows/macOS**: Go to [Ollama.com](https://ollama.com) to download and install it.
+* **Linux**: `ach-ubuntu.zip`
 
-* **Linux**: Execute `curl -fsSL https://ollama.com/install.sh | sh`
+* **macOS**: `ach-macos.zip`
 
-### Step 2: Download ACH Download the compressed package corresponding to your system from the [Releases](../../releases) page of this project:
+### 2. Quick Start
 
-* **Windows**: Download `ach_windows.exe` and place it in `C:\Windows`.
+#### **Windows (CMD / PowerShell)** After decompression, you will get `ach.exe`.
 
-* **Linux/macOS**: Download `ach_linux` or `ach_macos`, and run `sudo mv ach /usr/local/bin/ach`.
+`cmd ach` creates a "Test" folder on my desktop.
 
----
+Linux / macOS (Terminal) After downloading, you need to grant execute permissions (only once):
 
-## 📖 Usage Guide
+Bash
+## Grant permissions
+chmod +x ach_linux # macOS users please replace with ach_macos
 
-In any terminal (black window), type `ach` followed by the command you want to execute.
+## Run command
+./ach_linux "Find all video files larger than 100MB in the current directory"
 
-### Common Examples:
+## ⚠️ Pitfalls and Precautions
 
-| Input Example | AI Action (Automatically Adapts to Your System) |
+Loading Wait: Because the AI ​​model needs to be loaded from the hard drive into memory, there may be no response for the first 3-5 seconds after the program starts. This is normal, please wait a moment.
 
-| :--- | :--- |
+File Size: Because we have packaged the entire AI model file, the program size is around 400MB - 500MB. Although this is large, it brings the ultimate convenience of "offline usability".
 
-| `ach` View the largest file in the current directory | Generate `du` or `dir` commands and sort them |
-
-| `ach` Package this folder into a zip file | Invoke `zip` or `Compress-Archive` |
-
-| `ach` Find and kill processes using port 8080 | Automatically find the PID and execute `kill` or `taskkill` |
-
-| `ach` Update all system software | Automatically identify `apt`, `brew`, or `dnf` |
-
-| `ach` Change the system IP address to static | Generate complex network configuration commands |
-
----
-
-## 📊 Operating System Support (Operation Manual)
-
-| Operating System | Architecture Support | Automatic Language Recognition | Dependency Requirements |
-
-| :--- | :--- | :--- | :--- |
-
-| **Windows 10/11** | x86/ARM | ✅ Supported | Ollama Windows |
-
-| **macOS (Intel/M1/M2)** | Universal | ✅ Supported | Ollama Mac |
-
-| **Linux (All Distros)** | x86/ARM/RISC-V | ✅ Supported | Ollama Linux |
-
-| **FreeBSD** | x86 | ✅ Supported | pkg install ollama |
-
-| **Chrome OS** | Linux Mode | ✅ Supported | Ollama (Linux) |
-
----
-
-## 👨‍💻 Development and Compilation
-
-If you want to compile it yourself, please ensure that Python 3.11+ is installed:
-
-```bash
-
-# Install packaging tools
-
-pip install pyinstaller
-
-# Compile a single file
+Second Confirmation: AI is not omnipotent. Before pressing 'y' to execute, please be sure to check whether the AI-suggested commands are safe to avoid accidentally deleting important data.
 
 
-pyinstaller --onefile --name ach ach.py
+Model limitations: The built-in 0.5B model excels at file handling, directory operations, and system status queries. However, it may struggle with complex Python scripts due to insufficient processing power.
