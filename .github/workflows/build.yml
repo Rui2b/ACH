@@ -1,4 +1,4 @@
-name: Build and Release Standalone ACH
+name: ACH New Realease
 
 on:
   push:
@@ -61,3 +61,4 @@ jobs:
           files: dist/${{ matrix.artifact_name == 'ach-windows.exe' && 'ach.exe' || matrix.artifact_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
