@@ -31,7 +31,6 @@ Go to the [Releases](https://github.com/Rui2b/ACH/releases) page to download the
 
 * **Linux**: `ach-ubuntu.zip`
 
-* **macOS**: `ach-macos.zip`
 
 ### 2. Quick Start
 
@@ -58,6 +57,7 @@ Second Confirmation: AI is not omnipotent. Before pressing 'y' to execute, pleas
 
 
 Model limitations: The built-in 0.5B model excels at file handling, directory operations, and system status queries. However, it may struggle with complex Python scripts due to insufficient processing power.
+
 
 
 
