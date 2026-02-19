@@ -1,4 +1,4 @@
-name: ACH (AI Command Helper)
+name: Build and Release Standalone ACH
 
 on:
   push:
@@ -18,10 +18,10 @@ jobs:
         include:
           - os: windows-latest
             artifact_name: ach.exe
-            out_name: ach-windows.exe
+            out_name: ach.exe
           - os: ubuntu-latest
             artifact_name: ach_linux
-            out_name: ach-linux
+            out_name: ach
 
     steps:
       - name: Checkout code
@@ -45,10 +45,22 @@ jobs:
       - name: Build Binary
         shell: bash
         run: |
+          # 动态获取 llama_cpp 库的路径，确保能找到相关的 .dll / .so 文件
+          PYTHON_LIB=$(python -c "import llama_cpp, os; print(os.path.dirname(llama_cpp.__file__))")
+          echo "Llama_cpp path: $PYTHON_LIB"
+          
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            pyinstaller --onefile --add-data "ACH/model.gguf;." --name ${{ matrix.artifact_name }} ACH/ach.py
+            # Windows 打包：使用分号 ; 分隔，并显式包含整个 llama_cpp 目录
+            pyinstaller --onefile \
+              --add-data "ACH/model.gguf;." \
+              --add-data "$PYTHON_LIB;llama_cpp" \
+              --name ${{ matrix.artifact_name }} ACH/ach.py
           else
-            pyinstaller --onefile --add-data "ACH/model.gguf:." --name ${{ matrix.artifact_name }} ACH/ach.py
+            # Linux 打包：使用冒号 : 分隔
+            pyinstaller --onefile \
+              --add-data "ACH/model.gguf:." \
+              --add-data "$PYTHON_LIB:llama_cpp" \
+              --name ${{ matrix.artifact_name }} ACH/ach.py
           fi
 
       - name: Prepare Artifact
