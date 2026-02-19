@@ -1,10 +1,10 @@
 # 🤖 ACH (AI Command Helper) - Make Your Terminal Understand Human Language
 
-Chinese Version ---> [README](https://github.com/Rui2b/ACH/blob/main/readme/zh_cn-README.md)
+Chinese Version ——————> [README](https://github.com/Rui2b/ACH/blob/main/readme/zh_cn-README.md)
 
 **ACH** is a native AI command-line tool designed for efficiency (and laziness). It encapsulates a **500 million-parameter AI brain** directly within the program.
 
-No Python environment installation required, no complex Ollama configuration needed, no internet connection required. With just a single binary file, you can command your Windows, Linux, or macOS to perform system tasks using "natural language."
+No Python environment installation required, no complex Ollama configuration needed, no internet connection required. With just a single binary file, you can command your Windows, Linux, or to perform system tasks using "natural language."
 
 ---
 
@@ -18,7 +18,7 @@ No Python environment installation required, no complex Ollama configuration nee
 
 * **⚡ Extremely Lightweight**: Requires only about 500MB of memory to run smoothly, even on older computers.
 
-* **🌍 Cross-Platform Support**: One codebase works on three platforms.
+* **🌍 Cross-Platform Support**: One codebase works on two platforms.
 
 ---
 
@@ -36,13 +36,13 @@ Go to the [Releases](https://github.com/Rui2b/ACH/releases) page to download the
 
 #### **Windows (CMD / PowerShell)** After decompression, you will get `ach.exe`.
 
-`cmd ach` creates a "Test" folder on my desktop.
+`cmd ach` creates a "Test" folder on my desktop. (For Windows users: after you get the exe file you have to put it in folder "Windows")
 
-Linux / macOS (Terminal) After downloading, you need to grant execute permissions (only once):
+Linux (Terminal) After downloading, you need to grant execute permissions (only once):
 
 Bash
 ## Grant permissions
-chmod +x ach_linux # macOS users please replace with ach_macos
+chmod +x ach_linux 
 
 ## Run command
 ./ach_linux "Find all video files larger than 100MB in the current directory"
@@ -57,6 +57,7 @@ Second Confirmation: AI is not omnipotent. Before pressing 'y' to execute, pleas
 
 
 Model limitations: The built-in 0.5B model excels at file handling, directory operations, and system status queries. However, it may struggle with complex Python scripts due to insufficient processing power.
+
 
 
 
