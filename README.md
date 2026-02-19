@@ -1,6 +1,6 @@
 # 🤖 ACH (AI Command Helper) - Make Your Terminal Understand Human Language
 
-Chinese Version ——————> [README](https://github.com/Rui2b/ACH/blob/main/readme/zh_cn-README.md)
+Chinese Version ————> [README](https://github.com/Rui2b/ACH/blob/main/readme/zh_cn-README.md)
 
 **ACH** is a native AI command-line tool designed for efficiency (and laziness). It encapsulates a **500 million-parameter AI brain** directly within the program.
 
@@ -29,14 +29,14 @@ Go to the [Releases](https://github.com/Rui2b/ACH/releases) page to download the
 
 * **Windows**: `ach-windows.zip`
 
-* **Linux**: `ach-ubuntu.zip`————>(While it supports other Linux distributions, Ubuntu is recommended for a better experience.)
+* **Linux**: `ach-ubuntu.zip`——>(While it supports other Linux distributions, Ubuntu is recommended for a better experience.)
 
 
 ### 2. Quick Start
 
-#### **Windows (CMD / PowerShell)** After decompression, you will get `ach.exe`.
+#### **Windows (CMD / PowerShell)** After decompression, you will get `ach.exe`. ——>(For Windows users: after you get the exe file you have to put it in folder "Windows")
 
-`cmd ach` creates a "Test" folder on my desktop. (For Windows users: after you get the exe file you have to put it in folder "Windows")
+`cmd ach` creates a "Test" folder on my desktop. 
 
 Linux (Terminal) After downloading, you need to grant execute permissions (only once):
 
@@ -57,6 +57,7 @@ Second Confirmation: AI is not omnipotent. Before pressing 'y' to execute, pleas
 
 
 Model limitations: The built-in 0.5B model excels at file handling, directory operations, and system status queries. However, it may struggle with complex Python scripts due to insufficient processing power.
+
 
 
 
