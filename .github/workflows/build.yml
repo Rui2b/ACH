@@ -18,10 +18,10 @@ jobs:
         include:
           - os: windows-latest
             artifact_name: ach.exe
-            out_name: ach.exe
+            out_name: ach.exe  # 统一命名为 ach
           - os: ubuntu-latest
             artifact_name: ach_linux
-            out_name: ach
+            out_name: ach        # 统一命名为 ach
 
     steps:
       - name: Checkout code
@@ -33,8 +33,15 @@ jobs:
           python-version: '3.10'
 
       - name: Install Dependencies
+        shell: bash
         run: |
-          pip install pyinstaller llama-cpp-python
+          # 核心修复：针对 0xc000001d 报错，禁用高级指令集以实现最大硬件兼容性
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            export CMAKE_ARGS="-DLLAMA_AVX2=OFF -DLLAMA_AVX=OFF -DLLAMA_FMA=OFF"
+          fi
+          # 强制重新编译 llama-cpp-python 以应用上述禁用参数
+          pip install pyinstaller
+          pip install --force-reinstall llama-cpp-python
 
       - name: Download Model
         shell: bash
@@ -45,18 +52,15 @@ jobs:
       - name: Build Binary
         shell: bash
         run: |
-          # 动态获取 llama_cpp 库的路径，确保能找到相关的 .dll / .so 文件
+          # 动态获取库路径，解决运行时的 FileNotFoundError
           PYTHON_LIB=$(python -c "import llama_cpp, os; print(os.path.dirname(llama_cpp.__file__))")
-          echo "Llama_cpp path: $PYTHON_LIB"
           
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            # Windows 打包：使用分号 ; 分隔，并显式包含整个 llama_cpp 目录
             pyinstaller --onefile \
               --add-data "ACH/model.gguf;." \
               --add-data "$PYTHON_LIB;llama_cpp" \
               --name ${{ matrix.artifact_name }} ACH/ach.py
           else
-            # Linux 打包：使用冒号 : 分隔
             pyinstaller --onefile \
               --add-data "ACH/model.gguf:." \
               --add-data "$PYTHON_LIB:llama_cpp" \
