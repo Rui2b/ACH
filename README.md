@@ -36,7 +36,7 @@ Go to the [Releases](https://github.com/Rui2b/ACH/releases) page to download the
 
 #### **Windows (CMD / PowerShell)** After decompression, you will get `ach.exe`. ——>(For Windows users: after you get the exe file you have to put it in folder "Windows")
 
-`cmd ach` creates a "Test" folder on my desktop. 
+`cmd` ach creates a "Test" folder on my desktop. 
 
 Linux (Terminal) After downloading, you need to grant execute permissions (only once):
 
@@ -57,6 +57,7 @@ Second Confirmation: AI is not omnipotent. Before pressing 'y' to execute, pleas
 
 
 Model limitations: The built-in 0.5B model excels at file handling, directory operations, and system status queries. However, it may struggle with complex Python scripts due to insufficient processing power.
+
 
 
 
